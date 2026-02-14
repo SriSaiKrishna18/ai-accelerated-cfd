@@ -1,0 +1,95 @@
+# Navier-Stokes 2D AI-HPC Hybrid Solver
+# GitHub Actions CI/CD Pipeline
+
+name: CI
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-cpp:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake g++ libgomp1
+    
+    - name: Build C++ solver (serial)
+      run: |
+        mkdir -p build
+        g++ -std=c++17 -O2 -I include \
+            src/core/*.cpp src/main.cpp \
+            -o build/ns_main_serial
+    
+    - name: Build C++ solver (OpenMP)
+      run: |
+        g++ -std=c++17 -O3 -fopenmp -DUSE_OPENMP -I include \
+            src/core/*.cpp src/main.cpp \
+            -o build/ns_main_omp -lpthread
+    
+    - name: Test solver
+      run: |
+        ./build/ns_main_serial 0.1 64 0.01
+        echo "Serial build test passed!"
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: cpp-binaries
+        path: build/
+
+  build-python:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+    
+    - name: Install Python dependencies
+      run: |
+        pip install torch numpy matplotlib pandas
+    
+    - name: Test Python imports
+      run: |
+        cd python
+        python -c "from models.convlstm import ConvLSTM; print('ConvLSTM OK')"
+        python -c "from data.dataset import NumpyDataset; print('Dataset OK')"
+    
+    - name: Test model creation
+      run: |
+        cd python
+        python -c "
+import torch
+from models.convlstm import ConvLSTM
+model = ConvLSTM(input_dim=3, hidden_dims=[32,32])
+x = torch.randn(2, 3, 64, 64)
+y = model(x, future_steps=5)
+print(f'Model output shape: {y.shape}')
+assert y.shape == (2, 5, 3, 64, 64)
+print('Model test passed!')
+"
+
+  docker:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Build Docker image
+      run: docker build -t ns-solver .
+    
+    - name: Test Docker container
+      run: |
+        docker run --rm ns-solver ls -la build/

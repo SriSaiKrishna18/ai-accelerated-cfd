@@ -1,0 +1,50 @@
+# Build artifacts
+build/
+*.o
+*.so
+*.a
+*.exe
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.env
+*.egg-info/
+
+# Data (large binary files)
+data/
+*.bin
+*.dat
+*.h5
+*.npz
+
+# Checkpoints (large model files)
+checkpoints/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# Results images (can be regenerated)
+results/*.png
+results/*.mp4
+results/*.json
+
+# Logs
+*.log
+wandb/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Gemini/Agent
+.gemini/
+
+# Review notes (personal)
+review.txt
+to_do.txt
