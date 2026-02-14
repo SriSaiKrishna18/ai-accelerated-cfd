@@ -34,6 +34,10 @@ results/*.png
 results/*.mp4
 results/*.json
 
+# But keep validation proof-of-work files
+!results/validation_log.txt
+!results/comprehensive_validation.png
+
 # Logs
 *.log
 wandb/
