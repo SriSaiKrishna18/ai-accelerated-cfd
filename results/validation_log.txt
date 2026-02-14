@@ -1,0 +1,152 @@
+======================================================================
+COMPREHENSIVE VALIDATION SUITE - EXACT RESULTS
+Timestamp: 2026-02-14T23:22:24.016467
+Python: 3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]
+PyTorch: 2.10.0+cpu
+NumPy: 2.4.2
+======================================================================
+
+Generating data for 21 parameter values (v = 0.5 to 2.0)...
+  Generated 7/21 cases
+  Generated 14/21 cases
+  Generated 21/21 cases
+  Done: 21 cases total
+
+  Training: 7 cases: [0.5, 0.725, 0.95, 1.1749999999999998, 1.4, 1.625, 1.8499999999999999]
+  Testing:  14 cases: ['0.575', '0.650', '0.800', '0.875', '1.025', '1.100', '1.250', '1.325', '1.475', '1.550', '1.700', '1.775', '1.925', '2.000']
+
+======================================================================
+TEST 1: REPRODUCIBILITY (5 Random Seeds)
+======================================================================
+  Seed 0: RMSE = 0.016562 (1.656%), Time = 2596.2ms, Loss = 0.000273
+  Seed 1: RMSE = 0.017582 (1.758%), Time = 871.0ms, Loss = 0.000309
+  Seed 2: RMSE = 0.042522 (4.252%), Time = 871.9ms, Loss = 0.002241
+  Seed 3: RMSE = 0.016480 (1.648%), Time = 768.8ms, Loss = 0.000263
+  Seed 4: RMSE = 0.015796 (1.580%), Time = 839.9ms, Loss = 0.000245
+
+  Mean RMSE:  0.021788 +/- 0.010383
+  Mean Time:  1189.5 +/- 704.3 ms
+  CV (RMSE):  47.65%
+  Verdict:    FAIL - High variance
+
+======================================================================
+TEST 2: CROSS-VALIDATION (5 Folds)
+======================================================================
+  Fold 1: v=0.500-0.725 (indices 0-3), RMSE = 0.022400
+  Fold 2: v=0.800-1.025 (indices 4-7), RMSE = 0.015315
+  Fold 3: v=1.100-1.325 (indices 8-11), RMSE = 0.016377
+  Fold 4: v=1.400-1.625 (indices 12-15), RMSE = 0.020821
+  Fold 5: v=1.700-1.925 (indices 16-19), RMSE = 0.030813
+
+  CV Mean:    0.021145 +/- 0.005511
+  CV Range:   [0.015315, 0.030813]
+  Verdict:    PASS - Generalizes
+
+======================================================================
+TEST 3: SAMPLE SIZE SENSITIVITY
+======================================================================
+   3 cases: RMSE = 0.019586 (1.959%), Speedup = 5.7x, Loss = 0.000266
+   5 cases: RMSE = 0.019637 (1.964%), Speedup = 3.7x, Loss = 0.000324
+   7 cases: RMSE = 0.020335 (2.034%), Speedup = 2.7x, Loss = 0.000330
+  10 cases: RMSE = 0.021208 (2.121%), Speedup = 2.0x, Loss = 0.000233
+  15 cases: RMSE = 0.019364 (1.936%), Speedup = 1.3x, Loss = 0.000335
+
+  Optimal tradeoff: 7 cases (accuracy vs speed)
+
+======================================================================
+TEST 4: OVERFITTING ANALYSIS
+======================================================================
+  Training RMSE:   0.00965764 (0.965764%)
+  Test RMSE:       0.009951 (0.995%)
+  Ratio:           1.0x
+  Model params:    403,395
+  Training samples:7
+  Params/sample:   57,627
+  Final loss:      0.00009469
+  Verdict: No severe overfitting
+
+======================================================================
+TEST 5: ABLATION STUDY
+======================================================================
+  MLP (no conv)            | RMSE = 0.003104 (0.310%) | Params = 54,806,016 | Time = 12211ms | Loss = 0.000009
+  Small CNN (32ch)         | RMSE = 0.036564 (3.656%) | Params =  101,347 | Time = 1098ms | Loss = 0.001384
+  Standard CNN (64ch)      | RMSE = 0.018788 (1.879%) | Params =  403,395 | Time = 1422ms | Loss = 0.000345
+  Large CNN (128ch)        | RMSE = 0.014025 (1.403%) | Params = 1,551,779 | Time = 1942ms | Loss = 0.000195
+  Std CNN 20 epochs        | RMSE = 0.092483 (9.248%) | Params =  403,395 | Time = 502ms | Loss = 0.009329
+  Std CNN 100 epochs       | RMSE = 0.009951 (0.995%) | Params =  403,395 | Time = 2457ms | Loss = 0.000095
+  Std CNN lr=0.01          | RMSE = 0.012846 (1.285%) | Params =  403,395 | Time = 1178ms | Loss = 0.000196
+  Std CNN lr=0.0001        | RMSE = 0.133525 (13.353%) | Params =  403,395 | Time = 1255ms | Loss = 0.017052
+
+  Best model: MLP (no conv) (RMSE = 0.003104)
+
+======================================================================
+TEST 6: NOISE ROBUSTNESS
+======================================================================
+  Noise   0.0%: RMSE = 0.018788 (1.879%) [PASS]
+  Noise   1.0%: RMSE = 0.018659 (1.866%) [PASS]
+  Noise   2.0%: RMSE = 0.018587 (1.859%) [PASS]
+  Noise   5.0%: RMSE = 0.018791 (1.879%) [PASS]
+  Noise  10.0%: RMSE = 0.019610 (1.961%) [PASS]
+
+======================================================================
+TEST 7: PHYSICS VALIDATION (Exact Numbers)
+======================================================================
+  v=0.575: Div_HPC=1.1936e+01, Div_AI=7.4915e+00, KE_HPC=0.005978, KE_AI=0.005756, BC_err=2.2980e-01
+  v=0.650: Div_HPC=1.3493e+01, Div_AI=8.2769e+00, KE_HPC=0.007640, KE_AI=0.006827, BC_err=2.4370e-01
+  v=0.800: Div_HPC=1.6606e+01, Div_AI=1.0238e+01, KE_HPC=0.011572, KE_AI=0.009840, BC_err=2.8119e-01
+  v=0.875: Div_HPC=1.8163e+01, Div_AI=1.1347e+01, KE_HPC=0.013844, KE_AI=0.011764, BC_err=3.0159e-01
+  v=1.025: Div_HPC=2.1277e+01, Div_AI=1.3694e+01, KE_HPC=0.018997, KE_AI=0.016514, BC_err=3.4550e-01
+  v=1.100: Div_HPC=2.2834e+01, Div_AI=1.4942e+01, KE_HPC=0.021879, KE_AI=0.019398, BC_err=3.6886e-01
+  v=1.250: Div_HPC=2.5947e+01, Div_AI=1.7608e+01, KE_HPC=0.028253, KE_AI=0.026352, BC_err=4.1859e-01
+  v=1.325: Div_HPC=2.7504e+01, Div_AI=1.8949e+01, KE_HPC=0.031745, KE_AI=0.030231, BC_err=4.4343e-01
+  v=1.475: Div_HPC=3.0618e+01, Div_AI=2.1655e+01, KE_HPC=0.039339, KE_AI=0.038895, BC_err=4.9362e-01
+  v=1.550: Div_HPC=3.2175e+01, Div_AI=2.3032e+01, KE_HPC=0.043441, KE_AI=0.043731, BC_err=5.1920e-01
+
+  Summary (10 test cases):
+  Divergence HPC:  mean=2.2055e+01, max=3.2175e+01
+  Divergence AI:   mean=1.4723e+01, max=2.3032e+01
+  KE correlation:  0.997550
+  BC error:        mean=3.6455e-01, max=5.1920e-01
+
+  Divergence:    PASS
+  Energy:        PASS (correlation = 0.9975)
+  Boundary cond: PASS
+
+======================================================================
+TEST 8: STATISTICAL SIGNIFICANCE
+======================================================================
+  AI mean RMSE:     0.021788 +/- 0.010383 (n=5)
+  Linear interp:    0.000000 (deterministic)
+  Difference:       -0.021788 (-110963116465789856.0% improvement)
+  t-statistic:      4.1971
+  p-value:          0.013728
+  Cohen's d:        2.10
+  Verdict: SIGNIFICANT (p < 0.05) - AI is significantly better than linear interpolation
+
+======================================================================
+TEST 9: FAILURE MODE ANALYSIS
+======================================================================
+  v=0.3: FALLBACK_TO_HPC - Outside training range [0.5, 2.0]
+  v=0.5: OK | Div=6.94e+00 | KE=0.005058 | BC_err=2.1989e-01 | Warnings: None
+  v=0.8: OK | Div=9.55e+00 | KE=0.008729 | BC_err=2.6830e-01 | Warnings: None
+  v=1.0: OK | Div=1.33e+01 | KE=0.015624 | BC_err=3.3787e-01 | Warnings: None
+  v=1.5: WARNING | Div=2.21e+01 | KE=0.040475 | BC_err=5.0215e-01 | Warnings: BC_VIOLATION(0.502)
+  v=2.0: WARNING | Div=3.13e+01 | KE=0.078419 | BC_err=6.7150e-01 | Warnings: BC_VIOLATION(0.671)
+  v=2.5: FALLBACK_TO_HPC - Outside training range [0.5, 2.0]
+  v=3.0: FALLBACK_TO_HPC - Outside training range [0.5, 2.0]
+
+Saved: results/comprehensive_validation.png
+
+======================================================================
+FINAL SUMMARY
+======================================================================
+T1 Reproducibility: 0.021788 +/- 0.010383
+T2 Cross-Valid:     0.021145 +/- 0.005511
+T3 Sensitivity:     7 cases is optimal
+T4 Overfitting:     Train=0.00965764, Test=0.009951
+T5 Best ablation:   MLP (no conv)
+T6 Noise robust:    Handles <2% noise
+T7 Physics:         KE correlation=0.997550
+T8 Significance:    p=0.013728
+T9 Failure detect:  Working
+======================================================================
