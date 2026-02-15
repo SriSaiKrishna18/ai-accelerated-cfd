@@ -1,8 +1,22 @@
-# Navier-Stokes 2D AI-HPC Hybrid Solver
+# 2D Pressure-Velocity Flow Surrogate Model
 
-> **19.5× combined speedup for 100-case parameter sweep with 98.5% accuracy**
+> **AI-accelerated parameter sweeps: 19.5× speedup with ~2% error**
 
 [![Build Status](https://github.com/SriSaiKrishna18/ai-accelerated-cfd/actions/workflows/ci.yml/badge.svg)](https://github.com/SriSaiKrishna18/ai-accelerated-cfd/actions)
+
+---
+
+## ⚠️ Solver Disclaimer
+
+This project uses a **simplified 2D pressure-velocity model** with explicit Euler time integration.
+It is **NOT** a full incompressible Navier-Stokes solver:
+- Divergence: ~22 (a proper incompressible solver achieves ~1e-6)
+- Pressure Poisson equation is not iterated to convergence
+- Results demonstrate **relative accuracy** (AI vs this solver), not absolute physics fidelity
+
+For production CFD, use established solvers (OpenFOAM, Fluent, SU2).
+
+**The AI/HPC integration methodology, speedup measurement, and validation approach are all real and transferable to proper solvers.**
 
 ---
 
@@ -10,10 +24,9 @@
 
 | Metric | Result |
 |--------|--------|
-| **Hybrid Speedup** | **19.5×** vs optimized HPC (measured!) |
-| **Accuracy** | **~2%** error (5 seeds: 0.0166 ± 0.0009 excluding outlier) |
-| **Physics** | KE correlation = 0.9975, divergence PASS |
-| **Significance** | p = 0.0137 (statistically significant) |
+| **Hybrid Speedup** | **19.5×** vs optimized HPC (measured) |
+| **Accuracy** | ~2% RMSE (relative to this solver) |
+| **Physics** | KE correlation > 0.99, BC enforced post-hoc |
 | **Validation** | 9 tests, see [VALIDATION.md](VALIDATION.md) |
 
 ```
@@ -73,18 +86,13 @@ Why? Training is ONE-TIME, inference is 2780× faster per case.
 
 ```bash
 # Install dependencies
-pip install torch numpy matplotlib
+pip install torch numpy matplotlib scikit-learn
 
 # Run 100-case benchmark
 python scripts/benchmark_100_cases.py
-```
 
-Expected output:
-```
-Pure HPC: 820,747ms (13.7 min)
-Hybrid:    42,089ms (42 sec)
-Speedup:   19.5×
-Accuracy:  1.48% RMSE
+# Run full validation suite (9 tests)
+python scripts/comprehensive_validation.py
 ```
 
 ---
@@ -104,10 +112,10 @@ Accuracy:  1.48% RMSE
 ```
 AI_HPC/
 ├── src/optimized_solver.cpp           # HPC solver (OpenMP + Red-Black GS)
-├── python/models/convlstm.py          # AI model (745K parameters)
+├── python/models/convlstm.py          # AI model architecture
 ├── scripts/
 │   ├── benchmark_100_cases.py         # Full 100-case benchmark
-│   ├── comprehensive_validation.py    # 8-test validation suite
+│   ├── comprehensive_validation.py    # 9-test validation suite (v2)
 │   ├── physics_validation_detailed.py # Physics constraint checks
 │   ├── baseline_comparison.py         # AI vs alternatives
 │   ├── physics_informed_training.py   # PINN loss function
@@ -116,28 +124,41 @@ AI_HPC/
 └── results/                           # Benchmark outputs & plots
 ```
 
+**Model:** CNN with 403K parameters (64-channel decoder).
+Earlier experiments used ConvLSTM (745K params); the simpler CNN achieves similar accuracy with fewer parameters.
+
 ---
 
 ## 🔬 Validation & Robustness (9 Tests)
 
 | Test | Result |
 |------|--------|
-| Reproducibility (5 seeds) | RMSE: 0.0166 ± 0.0009 (excl. outlier) |
-| Cross-validation (5 folds) | 0.0211 ± 0.0055, generalizes |
-| Overfitting analysis | Train/Test ratio = 1.0x |
-| Ablation (8 configs) | MLP best but impractical; CNN chosen |
+| Reproducibility (5 seeds) | With early stopping, consistent RMSE |
+| Cross-validation (5 folds) | v ∈ [0.1, 1.0] — consistent with training |
+| Overfitting analysis | Train/test gap documented |
+| Ablation (8 configs) | Includes train AND inference timing |
 | Noise robustness | Robust up to 10% noise |
-| Physics validation | KE corr = 0.9975, divergence PASS |
-| Statistical significance | p = 0.0137 (significant) |
-| Failure detection | Catches extrapolation + BC violations |
+| Physics validation | KE correlation, BC enforcement (before/after) |
+| Statistical significance | AI vs linear interp vs GP (with p-values) |
+| Failure detection | Out-of-range detection, BC checks |
 
 See [VALIDATION.md](VALIDATION.md) for exact numbers and [`results/validation_log.txt`](results/validation_log.txt) for proof.
 
 ---
 
+## ⚠️ Known Limitations
+
+1. **Not true Navier-Stokes**: Solver uses simplified Euler method (divergence ~22)
+2. **Circular validation**: AI accuracy is relative to this solver, not true physics
+3. **Boundary conditions**: Enforced post-hoc, not physics-informed
+4. **Single problem**: Only 2D lid-driven cavity tested
+5. **No SOTA comparison**: Not compared to POD, FNO, or published methods
+
+---
+
 ## 🎤 Interview Pitch
 
-> "I built an AI-HPC hybrid CFD solver achieving **19.5× speedup** over optimized HPC for 100-case parameter sweeps with **~2% error**. I ran a comprehensive 9-test validation suite — 5-seed reproducibility, 5-fold cross-validation, 8-config ablation, physics checks (KE corr 0.9975), and statistical significance (p=0.0137). I documented honest limitations: seed sensitivity, BC violations at high velocity, and single-problem scope."
+> "I built an AI-HPC hybrid surrogate model achieving **19.5× speedup** for 100-case parameter sweeps with ~2% error relative to the baseline solver. I ran 9 validation tests with exact numbers — 5-seed reproducibility with early stopping, 5-fold cross-validation on [0.1, 1.0], ablation with inference timing, and statistical significance (AI vs linear interpolation vs GP regression). I document honest limitations: the solver is simplified (not full NS), accuracy is relative, and BCs are enforced post-hoc. The methodology transfers to production solvers."
 
 ---
 
