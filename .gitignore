@@ -53,3 +53,7 @@ Thumbs.db
 review.txt
 review2.txt
 to_do.txt
+
+ns_solver/data/
+ns_solver/*.exe
+ns_solver/ns_solver.py
